@@ -23,7 +23,6 @@ df %>% pull(priority_id) %>% sum
 
 # question 2 --------------------------------------------------------------
 intersect_multi <- function(vec){
-  browser()
   for (i in seq_along(vec)){
     if(i==1)
       out <- strsplit(vec[i],"")[[1]]
@@ -34,4 +33,8 @@ intersect_multi <- function(vec){
 tibble(raw=readLines("data/day03.txt")) %>%
   mutate(elf_group =rep(1:(nrow(.)/3),each=3)) %>%
   group_by(elf_group) %>%
-  summarise(common_item = intersect_multi(raw))
+  summarise(common_item = intersect_multi(raw)) %>%
+  left_join(tibble(priority=c(letters,toupper(letters)),priority_id = 1:52),
+            by=c("common_item"="priority")) %>%
+  pull(priority_id) %>% sum
+

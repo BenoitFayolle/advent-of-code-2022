@@ -1,5 +1,8 @@
 library(tidyverse)
 
+
+# Question 1 --------------------------------------------------------------
+
 raw<-readLines("data/day10.txt")
 ops_df <- tibble(raw=c("start 1",raw)) %>%
   separate(raw,into=c("operation","value"),fill="right",sep=" ") %>%
@@ -16,9 +19,25 @@ register_spine <- tibble(cycle_id=1:max(ops_df$cycle_id)) %>%
       ops_df$register_value[ops_df_id]
     }
     )) %>%
-  mutate(register_value_during_cycle = lag(register_value,1))
+  mutate(register_value_during_cycle = lag(register_value,1,default = 1))
 
 register_spine %>% 
   filter(cycle_id %in% c(20,60,100,140,180,220)) %>%
   {sum(.$cycle_id*.$register_value_during_cycle)}
+  
+
+# Question 2 --------------------------------------------------------------
+sprite_pos <- register_spine %>%
+  rename(sprite_center_pixel_position = register_value_during_cycle) %>%
+  mutate(sprite_pixels_position = map(sprite_center_pixel_position,~(.-1):(.+1))) %>%
+  mutate(x=rep(0:39,6),y=rep(6:1,each=40)) %>%
+  mutate(crt_pos = x) %>%
+  mutate(is_pixel_lit = map2_lgl(sprite_pixels_position,crt_pos,function(.x,.y){
+    .y %in% .x
+  }))
+
+sprite_pos %>%
+  filter(is_pixel_lit) %>%
+  ggplot(aes(x=x,y=y)) +
+  geom_point()
   
